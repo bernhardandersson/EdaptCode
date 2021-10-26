@@ -23,6 +23,7 @@ def sign_in_prod(user_name, password, driver):
 #Signs into edapt uat using user_name and password
 def sign_in_uat(user_name, password, driver):
     driver.get('https://account.edapt.education/#/login-uat')
+    driver.maximize_window()
     elements = driver.find_elements(By.TAG_NAME, 'input')
     elements[0].send_keys(user_name)
     elements[1].send_keys(password)
@@ -37,8 +38,13 @@ def navigate_to_interventionsv4(driver):
 def change_school_to(school_id, driver):
     find_and_click_elem(0, ".fa.fa-cog", driver)
 
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, "[new school]")))
-    select = Select(driver.find_element(By.ID, 'school_id'))
+    try:
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, "[new school]")))
+        select = Select(driver.find_element(By.ID, 'school_id'))
+    except Exception:
+        driver.refresh()
+        change_school_to(school_id, driver)
+        return
 
     if (not option_exists(select, school_id, driver)):
         find_and_click_elem(1, "[new school]", driver)
@@ -48,7 +54,6 @@ def change_school_to(school_id, driver):
     else:
         select.select_by_visible_text(school_id)
     
-    #time.sleep(1)
     driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
     time.sleep(1)
     find_and_click_elem(0, "button#btn-switch", driver)
@@ -56,12 +61,16 @@ def change_school_to(school_id, driver):
 
 #Changes login ID
 def change_staff_id_to(staff_id, driver):
-    #time.sleep(1)
     find_and_click_elem(0, ".fa.fa-cog", driver)
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input#staff_id")))
-    driver.find_element(By.CSS_SELECTOR, "input#staff_id").clear()
-    driver.find_element(By.CSS_SELECTOR, "input#staff_id").send_keys(staff_id)
-    find_and_click_elem(0, "button#save-setting", driver)
+    try:
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input#staff_id")))
+        driver.find_element(By.CSS_SELECTOR, "input#staff_id").clear()
+        driver.find_element(By.CSS_SELECTOR, "input#staff_id").send_keys(staff_id)
+        find_and_click_elem(0, "button#save-setting", driver)
+    except Exception:
+        driver.refresh()
+        change_staff_id_to(staff_id, driver)
+        return
 
 def dashboard_button_test(driver):
     find_and_click_elem(1, "Dashboard", driver)
@@ -70,16 +79,20 @@ def dashboard_button_test(driver):
     except AssertionError:
         print("Click of dashboard button did not return to dashboard")
 
-def intervention_numbers_test_PROTOTYPE(int_type, driver):
+def intervention_numbers_test_PROTOTYPE(int_type, driver, staff_id, school_id, f):
+    bug_exists = False
+
     try:
         find_and_click_elem(1, int_type, driver)
     except StaleElementReferenceException:
+        time.sleep(1)
         find_and_click_elem(1, int_type, driver)
 
     try:
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".number.number--completed")))
         cir_num_com = int(driver.find_element(By.CSS_SELECTOR, ".number.number--completed").text)
     except ValueError:
+        time.sleep(1)
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".number.number--completed")))
         cir_num_com = int(driver.find_element(By.CSS_SELECTOR, ".number.number--completed").text)
     int_cnt_com = len(driver.find_elements(By.CLASS_NAME, "intervention-point.number--completed"))
@@ -88,6 +101,7 @@ def intervention_numbers_test_PROTOTYPE(int_type, driver):
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".number.number--inprogress")))
         cir_num_prg = int(driver.find_element(By.CSS_SELECTOR, ".number.number--inprogress").text)
     except ValueError:
+        time.sleep(1)
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".number.number--inprogress")))
         cir_num_prg = int(driver.find_element(By.CSS_SELECTOR, ".number.number--inprogress").text)
     int_cnt_prg = len(driver.find_elements(By.CLASS_NAME, "intervention-point.number--inprogress"))
@@ -96,6 +110,7 @@ def intervention_numbers_test_PROTOTYPE(int_type, driver):
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".number.number--notstarted")))
         cir_num_nst = int(driver.find_element(By.CSS_SELECTOR, ".number.number--notstarted").text)
     except ValueError:
+        time.sleep(1)
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".number.number--notstarted")))
         cir_num_nst = int(driver.find_element(By.CSS_SELECTOR, ".number.number--notstarted").text)
     int_cnt_nst = len(driver.find_elements(By.CLASS_NAME, "intervention-point.number--notstarted"))
@@ -103,17 +118,22 @@ def intervention_numbers_test_PROTOTYPE(int_type, driver):
     try:
         assert cir_num_com == int_cnt_com
     except AssertionError:
+        if(not bug_exists):
+            bug_exists = True
+            f.write("Bugs for school_id = "+school_id +" and staff_id = " + staff_id+"\n")
+            
         print(int_type+ " COMPLETED: Number of interventions in circle is not equal to number of interventions in list")
-
+        f.write(int_type+ " COMPLETED: Number of interventions in circle is not equal to number of interventions in list\n")
     try:
         assert cir_num_prg == int_cnt_prg
     except AssertionError:
         print(int_type+" IN PROGRESS: Number of interventions in circle is not equal to number of interventions in list")
-
+        f.write(int_type+" IN PROGRESS: Number of interventions in circle is not equal to number of interventions in list\n")
     try:
         assert cir_num_nst == int_cnt_nst
     except AssertionError:
         print(int_type+" NOT STARTED: Number of interventions in circle is not equal to number of interventions in list")
+        f.write(int_type+" NOT STARTED: Number of interventions in circle is not equal to number of interventions in list\n")
 
 def intervention_search_test_PROTOTYPE(int_type, driver):
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, int_type)))

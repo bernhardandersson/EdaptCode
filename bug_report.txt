@@ -1,0 +1,7 @@
+Bugs for school_id = PAA and staff_id = burton
+All COMPLETED: Number of interventions in circle is not equal to number of interventions in list
+All IN PROGRESS: Number of interventions in circle is not equal to number of interventions in list
+All NOT STARTED: Number of interventions in circle is not equal to number of interventions in list
+Bugs for school_id = CRT008 and staff_id = craigieburn
+All COMPLETED: Number of interventions in circle is not equal to number of interventions in list
+All IN PROGRESS: Number of interventions in circle is not equal to number of interventions in list

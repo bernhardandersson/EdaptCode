@@ -1,6 +1,7 @@
 import automateEdapt as ae
 import database as db
-import automateTools
+import automateTools 
+import time
 
 user_name ="bernhard.burton"
 password = "Bmoskaa1"
@@ -18,6 +19,7 @@ school_staff = db.school_staff_query(conn)
 #Prototype to compare intervention numbers and lists for all staff/school combos
 cur_school_id = ""
 check = False
+f = open("bug_report.txt", "w")
 for element in school_staff:
     if (element[0] != cur_school_id):
         cur_school_id=element[0]
@@ -28,9 +30,9 @@ for element in school_staff:
     print("\nUPTO STAFF: " + element[1]+ "\n----------------------------------------")
     if(check):
         check = False
-        ae.intervention_numbers_test_PROTOTYPE("All", driver)
-    ae.intervention_numbers_test_PROTOTYPE("Mine", driver)
-    ae.intervention_numbers_test_PROTOTYPE("Viewing", driver)
-
+        ae.intervention_numbers_test_PROTOTYPE("All", driver, cur_school_id, element[1], f)
+    ae.intervention_numbers_test_PROTOTYPE("Mine", driver, cur_school_id, element[1], f)
+    ae.intervention_numbers_test_PROTOTYPE("Viewing", driver, cur_school_id, element[1], f)
+f.close()
 
 driver.close()

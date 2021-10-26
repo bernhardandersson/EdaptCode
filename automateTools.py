@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
+import time
 
 #Initialises a chrome driver
 def start_chrome_driver():
@@ -22,28 +23,32 @@ def find_and_click_elem(by_type, string, driver):
         try:
             WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR, string)))
             driver.find_element(By.CSS_SELECTOR, string).click()
-        except StaleElementReferenceException:
+        except Exception:
+            time.sleep(1)
             WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR, string)))
             driver.find_element(By.CSS_SELECTOR, string).click()
     elif by_type == 1:
         try:
             WebDriverWait(driver,10).until(EC.presence_of_element_located((By.LINK_TEXT, string)))
             driver.find_element(By.LINK_TEXT, string).click()
-        except StaleElementReferenceException:
+        except Exception:
+            time.sleep(1)
             WebDriverWait(driver,10).until(EC.presence_of_element_located((By.LINK_TEXT, string)))
             driver.find_element(By.LINK_TEXT, string).click()
     elif by_type == 2:
         try:
             WebDriverWait(driver,10).until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, string)))
             driver.find_element(By.PARTIAL_LINK_TEXT, string).click()
-        except StaleElementReferenceException:
+        except Exception:
+            time.sleep(1)
             WebDriverWait(driver,10).until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, string)))
             driver.find_element(By.PARTIAL_LINK_TEXT, string).click()
     elif by_type == 3:
         try:
             WebDriverWait(driver,10).until(EC.presence_of_element_located((By.TAG_NAME, string)))
             driver.find_element(By.TAG_NAME, string).click()
-        except StaleElementReferenceException:
+        except Exception:
+            time.sleep(1)
             WebDriverWait(driver,10).until(EC.presence_of_element_located((By.TAG_NAME, string)))
             driver.find_element(By.TAG_NAME, string).click()
     else:
